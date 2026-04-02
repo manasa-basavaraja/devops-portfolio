@@ -1,0 +1,7 @@
+source:
+  type: csv
+  path: input/data.csv
+
+target:
+  type: csv
+  path: output/result.csv
