@@ -1,0 +1,8 @@
+services:
+  radar:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      # Optional: require matching X-Radar-Secret from GitHub Actions
+      RADAR_WEBHOOK_SECRET: ${RADAR_WEBHOOK_SECRET:-}

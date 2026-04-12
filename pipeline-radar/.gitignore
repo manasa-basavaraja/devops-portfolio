@@ -1,0 +1,6 @@
+/radar
+/radar.exe
+*.exe
+.DS_Store
+.idea/
+.vscode/

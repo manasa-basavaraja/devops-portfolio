@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pipeline Radar</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <header class="top">
+    <div>
+      <h1>Pipeline Radar</h1>
+      <p class="sub">Live CI/CD events from your GitHub Actions → WebSocket → this board.</p>
+    </div>
+    <div class="status" id="conn">Connecting…</div>
+  </header>
+
+  <section class="stats">
+    <div><span class="label">Events (session)</span> <strong id="count">0</strong></div>
+    <div><span class="label">WebSocket clients</span> <strong id="clients">—</strong></div>
+  </section>
+
+  <main>
+    <ul id="feed" class="feed" aria-live="polite"></ul>
+  </main>
+
+  <footer class="foot">
+    <code>POST /ingest</code> with JSON body. Optional header <code>X-Radar-Secret</code> when <code>RADAR_WEBHOOK_SECRET</code> is set.
+  </footer>
+
+  <script src="/app.js"></script>
+</body>
+</html>

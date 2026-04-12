@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+
+      - name: Go build
+        run: go build -o /dev/null ./cmd/server
+
+      - name: Pipeline Radar — workflow started
+        if: github.event_name == 'push'
+        env:
+          RADAR_URL: ${{ secrets.RADAR_INGEST_URL }}
+          RADAR_SECRET: ${{ secrets.RADAR_WEBHOOK_SECRET }}
+        run: |
+          if [ -z "$RADAR_URL" ]; then echo "RADAR_INGEST_URL not set — skipping radar notify"; exit 0; fi
+          BODY=$(jq -nc \
+            --arg ev "workflow_started" \
+            --arg repo "${{ github.repository }}" \
+            --arg wf "${{ github.workflow }}" \
+            --arg rid "${{ github.run_id }}" \
+            --arg st "in_progress" \
+            --arg br "${{ github.ref_name }}" \
+            --arg sha "${{ github.sha }}" \
+            --arg url "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            --arg msg "Workflow started" \
+            '{event:$ev,repository:$repo,workflow:$wf,run_id:$rid,status:$st,branch:$br,commit:$sha,url:$url,message:$msg}')
+          HDR=()
+          if [ -n "$RADAR_SECRET" ]; then HDR=(-H "X-Radar-Secret: $RADAR_SECRET"); fi
+          curl -sfS -X POST "$RADAR_URL" -H "Content-Type: application/json" "${HDR[@]}" -d "$BODY"
+
+      - name: Pipeline Radar — workflow finished
+        if: always() && github.event_name == 'push'
+        env:
+          RADAR_URL: ${{ secrets.RADAR_INGEST_URL }}
+          RADAR_SECRET: ${{ secrets.RADAR_WEBHOOK_SECRET }}
+          JOB_STATUS: ${{ job.status }}
+        run: |
+          if [ -z "$RADAR_URL" ]; then echo "RADAR_INGEST_URL not set — skipping radar notify"; exit 0; fi
+          BODY=$(jq -nc \
+            --arg ev "workflow_finished" \
+            --arg repo "${{ github.repository }}" \
+            --arg wf "${{ github.workflow }}" \
+            --arg rid "${{ github.run_id }}" \
+            --arg st "$JOB_STATUS" \
+            --arg br "${{ github.ref_name }}" \
+            --arg sha "${{ github.sha }}" \
+            --arg url "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            --arg msg "Workflow finished: ${JOB_STATUS}" \
+            '{event:$ev,repository:$repo,workflow:$wf,run_id:$rid,status:$st,branch:$br,commit:$sha,url:$url,message:$msg}')
+          HDR=()
+          if [ -n "$RADAR_SECRET" ]; then HDR=(-H "X-Radar-Secret: $RADAR_SECRET"); fi
+          curl -sfS -X POST "$RADAR_URL" -H "Content-Type: application/json" "${HDR[@]}" -d "$BODY"
