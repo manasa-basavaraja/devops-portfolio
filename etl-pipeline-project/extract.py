@@ -12,4 +12,4 @@ def extract_data(config):
         return pd.DataFrame(response.json())
 
     else:
-        raise ValueError("Unsupported source type")
+        raise ValueError("Unsupported type")
