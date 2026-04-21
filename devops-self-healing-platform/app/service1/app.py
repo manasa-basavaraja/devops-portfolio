@@ -1,5 +1,6 @@
 from flask import Flask
 import random
+from datetime import datetime  # new import
 
 app = Flask(__name__)
 
@@ -14,7 +15,10 @@ def cpu_spike():
 
 @app.route("/health")
 def health():
-    return {"status": "ok"}
+    return {
+        "status": "ok",
+        "timestamp": datetime.utcnow().isoformat()  # new field
+    }
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
