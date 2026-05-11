@@ -1,0 +1,31 @@
+# Example SLO spec: a public checkout API.
+#
+# The {window} token in the SLI queries is replaced by the generator
+# with each rate window (5m, 30m, 1h, 2h, 6h, 1d, 3d) when emitting
+# Prometheus recording rules.
+
+service: checkout-api
+
+labels:
+  team: payments
+  env: prod
+
+slos:
+  - name: availability
+    description: Ratio of non-5xx HTTP responses on the public checkout API.
+    objective: 99.9
+    window: 30d
+    sli:
+      good_events: |
+        sum(rate(http_requests_total{job="checkout-api",code!~"5.."}[{window}]))
+      total_events: |
+        sum(rate(http_requests_total{job="checkout-api"}[{window}]))
+    alerting:
+      page:
+        annotations:
+          summary: High burn rate on checkout-api availability SLO
+          runbook_url: https://runbooks.example.com/checkout-availability
+      ticket:
+        annotations:
+          summary: Elevated burn rate on checkout-api availability SLO
+          runbook_url: https://runbooks.example.com/checkout-availability
