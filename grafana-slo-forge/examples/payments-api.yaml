@@ -1,0 +1,44 @@
+# Example SLO spec with two SLOs (availability + latency) on the same
+# service. Latency uses an "events under threshold" SLI: count of requests
+# served under the target as the numerator, total as the denominator.
+
+service: payments-api
+
+labels:
+  team: payments
+  env: prod
+  tier: "1"
+
+slos:
+  - name: availability
+    description: Non-5xx HTTP responses on /v1/* endpoints.
+    objective: 99.95
+    window: 30d
+    sli:
+      good_events: |
+        sum(rate(http_requests_total{job="payments-api",path=~"/v1/.*",code!~"5.."}[{window}]))
+      total_events: |
+        sum(rate(http_requests_total{job="payments-api",path=~"/v1/.*"}[{window}]))
+    alerting:
+      page:
+        annotations:
+          runbook_url: https://runbooks.example.com/payments-availability
+      ticket:
+        annotations:
+          runbook_url: https://runbooks.example.com/payments-availability
+
+  - name: latency-p99-300ms
+    description: P99 request latency under 300ms (using histogram_quantile-friendly buckets).
+    objective: 99.0
+    window: 30d
+    sli:
+      good_events: |
+        sum(rate(http_request_duration_seconds_bucket{job="payments-api",le="0.3"}[{window}]))
+      total_events: |
+        sum(rate(http_request_duration_seconds_count{job="payments-api"}[{window}]))
+    alerting:
+      page:
+        enabled: false
+      ticket:
+        annotations:
+          runbook_url: https://runbooks.example.com/payments-latency
