@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: legacy-worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: legacy-worker
+  template:
+    metadata:
+      labels:
+        app: legacy-worker
+    spec:
+      hostNetwork: true
+      hostPID: true
+      containers:
+        - name: worker
+          image: legacy-worker:latest
+          imagePullPolicy: Always
+          securityContext:
+            privileged: true
