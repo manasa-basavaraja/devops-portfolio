@@ -1,0 +1,79 @@
+# Policy file for the Kubernetes manifest auditor.
+#
+# Each entry under `rules` may:
+#   - set `enabled: false` to skip the rule entirely
+#   - override `severity` (one of: low, medium, high, critical)
+#   - pass rule-specific `params`
+#
+# `fail_level` is the default exit-code threshold; override with
+# `--fail-level` on the CLI.
+
+fail_level: high
+
+rules:
+  image-tag-pinned:
+    enabled: true
+    severity: high
+
+  image-pull-policy:
+    enabled: true
+    severity: low
+
+  resource-requests:
+    enabled: true
+    severity: high
+
+  resource-limits:
+    enabled: true
+    severity: high
+
+  liveness-probe:
+    enabled: true
+    severity: medium
+
+  readiness-probe:
+    enabled: true
+    severity: medium
+
+  run-as-non-root:
+    enabled: true
+    severity: high
+
+  read-only-root-fs:
+    enabled: true
+    severity: medium
+
+  no-privileged:
+    enabled: true
+    severity: critical
+
+  no-host-network:
+    enabled: true
+    severity: critical
+
+  no-host-pid:
+    enabled: true
+    severity: critical
+
+  no-default-namespace:
+    enabled: true
+    severity: medium
+
+  required-labels:
+    enabled: true
+    severity: medium
+    params:
+      keys:
+        - app.kubernetes.io/name
+        - app.kubernetes.io/version
+        - owner
+
+  service-account:
+    enabled: true
+    severity: low
+
+  replicas-min:
+    enabled: true
+    severity: low
+    params:
+      min: 2
